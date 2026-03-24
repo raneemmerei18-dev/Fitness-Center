@@ -1,13 +1,17 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { Project, BlogPost, NewsPost, ContactSubmission, ProjectInquiry } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardHomePage() {
+  await connectDB();
   const [projects, blogs, news, contacts, inquiries] = await Promise.all([
-    prisma.project.count(),
-    prisma.blogPost.count(),
-    prisma.newsPost.count(),
-    prisma.contactSubmission.count(),
-    prisma.projectInquiry.count(),
+    Project.countDocuments(),
+    BlogPost.countDocuments(),
+    NewsPost.countDocuments(),
+    ContactSubmission.countDocuments(),
+    ProjectInquiry.countDocuments(),
   ]);
 
   return (

@@ -1,9 +1,10 @@
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Section } from "@prisma/client";
+import { Section } from "@/lib/db/models";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { User, Role, RolePermission } from "@/lib/db/models";
 import { hasSectionPermission } from "@/lib/permissions";
 
 const SESSION_COOKIE = "fc_session";
@@ -14,11 +15,11 @@ function getSecret() {
 }
 
 type SessionPayload = {
-  userId: number;
+  userId: string;
 };
 
 export type SessionUser = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   isSuperAdmin: boolean;
@@ -38,14 +39,13 @@ export async function verifySessionToken(token: string) {
   const { payload } = await jwtVerify(token, getSecret());
 
   return {
-    userId: Number(payload.userId),
+    userId: payload.userId as string,
   } satisfies SessionPayload;
 }
 
 export async function authenticateUser(email: string, password: string) {
-  const user = await prisma.user.findUnique({
-    where: { email: email.toLowerCase() },
-  });
+  await connectDB();
+  const user = await User.findOne({ email: email.toLowerCase() });
 
   if (!user) return null;
 
@@ -53,7 +53,7 @@ export async function authenticateUser(email: string, password: string) {
   if (!isValid) return null;
 
   return {
-    id: user.id,
+    id: user._id.toString(),
   };
 }
 
@@ -65,49 +65,30 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 
   try {
     const session = await verifySessionToken(token);
-    const prismaUserDelegate = prisma as unknown as {
-      user: {
-        findUnique(args: unknown): Promise<unknown>;
-      };
-    };
+    await connectDB();
 
-    const user = (await prismaUserDelegate.user.findUnique({
-      where: { id: session.userId },
-      include: {
-        role: {
-          include: {
-            permissions: true,
-          },
-        },
-      },
-    })) as
-      | {
-          id: number;
-          name: string;
-          email: string;
-          isSuperAdmin?: boolean;
-          role?: {
-            name?: string;
-            permissions?: Array<{ section: Section }>;
-          } | null;
-        }
-      | null;
+    const user = await User.findById(session.userId);
 
     if (!user) return null;
 
-    const roleData = user.role as
-      | {
-          name?: string;
-          permissions?: Array<{ section: Section }>;
-        }
-      | null
-      | undefined;
+    let roleData: { name?: string; permissions?: Array<{ section: Section }> } | null = null;
+
+    if (user.roleId) {
+      const role = await Role.findById(user.roleId);
+      if (role) {
+        const permissions = await RolePermission.find({ roleId: user.roleId });
+        roleData = {
+          name: role.name,
+          permissions: permissions.map((p) => ({ section: p.section as Section })),
+        };
+      }
+    }
 
     return {
-      id: user.id,
+      id: user._id.toString(),
       name: user.name,
       email: user.email,
-      isSuperAdmin: Boolean((user as { isSuperAdmin?: boolean }).isSuperAdmin),
+      isSuperAdmin: Boolean(user.isSuperAdmin),
       roleName: roleData?.name ?? null,
       sections: roleData?.permissions?.map((item) => item.section) ?? [],
     };

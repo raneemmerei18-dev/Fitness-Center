@@ -1,24 +1,27 @@
-import { Section } from "@prisma/client";
+import { Section } from "@/lib/db/models";
 import { NextResponse } from "next/server";
 import { ensureApiSectionAccess } from "@/lib/admin-guard";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { SiteContent } from "@/lib/db/models";
+import mongoose from "mongoose";
 
 export async function POST(request: Request) {
   const access = await ensureApiSectionAccess(Section.HOME);
   if (access.error) return access.error;
 
-  const formData = await request.formData();
-  const id = Number(formData.get("id"));
+  await connectDB();
 
-  await prisma.siteContent.update({
-    where: { id },
-    data: {
+  const formData = await request.formData();
+  const id = String(formData.get("id"));
+
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    await SiteContent.findByIdAndUpdate(id, {
       title: String(formData.get("title") ?? ""),
       subtitle: String(formData.get("subtitle") ?? ""),
       body: String(formData.get("body") ?? ""),
       details: String(formData.get("details") ?? ""),
-    },
-  });
+    });
+  }
 
   return NextResponse.redirect(new URL("/dashboard/content", request.url));
 }

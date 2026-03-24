@@ -1,7 +1,13 @@
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { Service } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function ServicesPage() {
-  const services = await prisma.service.findMany({ orderBy: { displayOrder: "asc" } });
+  await connectDB();
+  const services = await Service.find()
+    .sort({ displayOrder: 1 })
+    .lean();
 
   return (
     <main>

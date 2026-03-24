@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { ContactSubmission } from "@/lib/db/models";
 
 export async function POST(request: Request) {
+  await connectDB();
+
   const formData = await request.formData();
 
-  await prisma.contactSubmission.create({
-    data: {
-      name: String(formData.get("name") ?? ""),
-      email: String(formData.get("email") ?? ""),
-      phone: String(formData.get("phone") ?? ""),
-      message: String(formData.get("message") ?? ""),
-    },
+  await ContactSubmission.create({
+    name: String(formData.get("name") ?? ""),
+    email: String(formData.get("email") ?? ""),
+    phone: String(formData.get("phone") ?? "") || null,
+    message: String(formData.get("message") ?? ""),
   });
 
   return NextResponse.redirect(new URL("/contact", request.url));

@@ -1,14 +1,25 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { Project } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function ProjectDetailsPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await connectDB();
   const { slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug } });
+  const project = (await Project.findOne({ slug }).lean().exec()) as {
+    title: string;
+    slug: string;
+    description: string;
+    details: string;
+    location?: string | null;
+    duration?: string | null;
+  } | null;
 
   if (!project) {
     notFound();

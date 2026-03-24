@@ -1,11 +1,16 @@
-import { Section } from "@prisma/client";
+import { Section, BlogPost } from "@/lib/db/models";
 import { SectionCard } from "@/components/section-card";
 import { requireSection } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+
+export const dynamic = "force-dynamic";
 
 export default async function BlogDashboardPage() {
+  await connectDB();
   await requireSection(Section.BLOG);
-  const posts = await prisma.blogPost.findMany({ orderBy: { createdAt: "desc" } });
+  const posts = await BlogPost.find()
+    .sort({ createdAt: -1 })
+    .lean();
 
   return (
     <SectionCard title="Blog Management" subtitle="Create, edit, and delete blog posts">

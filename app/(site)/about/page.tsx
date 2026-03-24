@@ -1,5 +1,7 @@
 import { getSiteContentMap } from "@/lib/data";
 
+export const dynamic = "force-dynamic";
+
 export default async function AboutPage() {
   const content = await getSiteContentMap();
   const about = content.about_main;

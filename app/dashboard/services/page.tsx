@@ -1,11 +1,16 @@
-import { Section } from "@prisma/client";
+import { Section, Service } from "@/lib/db/models";
 import { SectionCard } from "@/components/section-card";
 import { requireSection } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+
+export const dynamic = "force-dynamic";
 
 export default async function ServicesDashboardPage() {
+  await connectDB();
   await requireSection(Section.SERVICES);
-  const services = await prisma.service.findMany({ orderBy: { displayOrder: "asc" } });
+  const services = await Service.find()
+    .sort({ displayOrder: 1 })
+    .lean();
 
   return (
     <SectionCard title="Services" subtitle="Create, update, and delete service cards">

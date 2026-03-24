@@ -1,4 +1,4 @@
-import { Section } from "@prisma/client";
+import { Section } from "@/lib/db/models";
 
 export const sectionLabels: Record<Section, string> = {
   HOME: "Home",

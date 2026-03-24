@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { NewsPost } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function NewsDetailsPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await connectDB();
   const { slug } = await params;
-  const item = await prisma.newsPost.findUnique({ where: { slug } });
+  const item = (await NewsPost.findOne({ slug }).lean().exec()) as {
+    title: string;
+    excerpt: string;
+    content: string;
+    createdAt: Date | string;
+  } | null;
 
   if (!item) {
     notFound();

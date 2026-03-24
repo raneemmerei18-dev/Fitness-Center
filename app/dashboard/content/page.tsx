@@ -1,12 +1,17 @@
-import { Section } from "@prisma/client";
+import { Section, SiteContent } from "@/lib/db/models";
 import { SectionCard } from "@/components/section-card";
 import { requireSection } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+
+export const dynamic = "force-dynamic";
 
 export default async function ContentDashboardPage() {
+  await connectDB();
   await requireSection(Section.HOME);
 
-  const items = await prisma.siteContent.findMany({ orderBy: { key: "asc" } });
+  const items = await SiteContent.find()
+    .sort({ key: 1 })
+    .lean();
 
   return (
     <SectionCard title="Site Content" subtitle="Edit Home, About, and Contact sections">

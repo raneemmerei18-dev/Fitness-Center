@@ -1,5 +1,7 @@
 import { getSiteContentMap } from "@/lib/data";
 
+export const dynamic = "force-dynamic";
+
 export default async function ContactPage() {
   const content = await getSiteContentMap();
   const contactInfo = content.contact_info;

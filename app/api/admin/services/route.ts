@@ -1,36 +1,41 @@
-import { Section } from "@prisma/client";
+import { Section } from "@/lib/db/models";
 import { NextResponse } from "next/server";
 import { ensureApiSectionAccess } from "@/lib/admin-guard";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { Service } from "@/lib/db/models";
+import mongoose from "mongoose";
 
 export async function POST(request: Request) {
   const access = await ensureApiSectionAccess(Section.SERVICES);
   if (access.error) return access.error;
 
+  await connectDB();
+
   const formData = await request.formData();
   const action = String(formData.get("_action") ?? "update");
 
   if (action === "create") {
-    await prisma.service.create({
-      data: {
-        title: String(formData.get("title") ?? ""),
-        summary: String(formData.get("summary") ?? ""),
-        details: String(formData.get("details") ?? ""),
-        displayOrder: Number(formData.get("displayOrder") ?? 0),
-      },
+    await Service.create({
+      title: String(formData.get("title") ?? ""),
+      summary: String(formData.get("summary") ?? ""),
+      details: String(formData.get("details") ?? ""),
+      displayOrder: Number(formData.get("displayOrder") ?? 0),
     });
   } else if (action === "delete") {
-    await prisma.service.delete({ where: { id: Number(formData.get("id")) } });
+    const id = String(formData.get("id"));
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      await Service.findByIdAndDelete(id);
+    }
   } else {
-    await prisma.service.update({
-      where: { id: Number(formData.get("id")) },
-      data: {
+    const id = String(formData.get("id"));
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      await Service.findByIdAndUpdate(id, {
         title: String(formData.get("title") ?? ""),
         summary: String(formData.get("summary") ?? ""),
         details: String(formData.get("details") ?? ""),
         displayOrder: Number(formData.get("displayOrder") ?? 0),
-      },
-    });
+      });
+    }
   }
 
   return NextResponse.redirect(new URL("/dashboard/services", request.url));

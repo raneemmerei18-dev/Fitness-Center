@@ -1,8 +1,14 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { NewsPost } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
-  const news = await prisma.newsPost.findMany({ orderBy: { createdAt: "desc" } });
+  await connectDB();
+  const news = await NewsPost.find()
+    .sort({ createdAt: -1 })
+    .lean();
 
   return (
     <main>

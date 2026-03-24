@@ -1,22 +1,49 @@
-import { Section } from "@prisma/client";
+import { Section, User, Role, RolePermission } from "@/lib/db/models";
 import { SectionCard } from "@/components/section-card";
 import { requireSection } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
 import { sectionLabels } from "@/lib/permissions";
 
+export const dynamic = "force-dynamic";
+
 export default async function UsersDashboardPage() {
+  await connectDB();
   await requireSection(Section.USERS);
 
-  const [users, roles] = await Promise.all([
-    prisma.user.findMany({
-      include: { role: true },
-      orderBy: { id: "asc" },
-    }),
-    prisma.role.findMany({
-      include: { permissions: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  const usersData = (await User.find().sort({ _id: 1 }).lean().exec()) as unknown as Array<{
+    _id: { toString(): string };
+    name: string;
+    email: string;
+    roleId?: { toString(): string } | null;
+    isSuperAdmin: boolean;
+  }>;
+  const rolesData = (await Role.find().sort({ name: 1 }).lean().exec()) as unknown as Array<{
+    _id: { toString(): string };
+    name: string;
+    description?: string | null;
+  }>;
+  const permissionsData = (await RolePermission.find().lean().exec()) as unknown as Array<{
+    roleId: { toString(): string };
+    section: Section;
+  }>;
+
+  const users = usersData.map((user) => ({
+    id: user._id.toString(),
+    name: user.name,
+    email: user.email,
+    roleId: user.roleId ? user.roleId.toString() : "",
+    isSuperAdmin: Boolean(user.isSuperAdmin),
+  }));
+
+  // Group permissions by roleId
+  const roles = rolesData.map((role) => ({
+    id: role._id.toString(),
+    name: role.name,
+    description: role.description ?? "",
+    permissions: permissionsData.filter(
+      (permission) => permission.roleId.toString() === role._id.toString(),
+    ),
+  }));
 
   return (
     <SectionCard title="Users & Role Permissions" subtitle="Create roles, assign section access, then assign users to roles">

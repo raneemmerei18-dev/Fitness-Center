@@ -1,28 +1,38 @@
-import { Section } from "@prisma/client";
+import { Section } from "@/lib/db/models";
 import { NextResponse } from "next/server";
 import { ensureApiSectionAccess } from "@/lib/admin-guard";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { BlogPost } from "@/lib/db/models";
+import mongoose from "mongoose";
 
 export async function POST(request: Request) {
   const access = await ensureApiSectionAccess(Section.BLOG);
   if (access.error) return access.error;
+
+  await connectDB();
 
   const formData = await request.formData();
   const action = String(formData.get("_action") ?? "update");
 
   const baseData = {
     title: String(formData.get("title") ?? ""),
-    slug: String(formData.get("slug") ?? ""),
+    slug: String(formData.get("slug") ?? "").toLowerCase(),
     excerpt: String(formData.get("excerpt") ?? ""),
     content: String(formData.get("content") ?? ""),
   };
 
   if (action === "create") {
-    await prisma.blogPost.create({ data: baseData });
+    await BlogPost.create(baseData);
   } else if (action === "delete") {
-    await prisma.blogPost.delete({ where: { id: Number(formData.get("id")) } });
+    const id = String(formData.get("id"));
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      await BlogPost.findByIdAndDelete(id);
+    }
   } else {
-    await prisma.blogPost.update({ where: { id: Number(formData.get("id")) }, data: baseData });
+    const id = String(formData.get("id"));
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      await BlogPost.findByIdAndUpdate(id, baseData);
+    }
   }
 
   return NextResponse.redirect(new URL("/dashboard/blog", request.url));

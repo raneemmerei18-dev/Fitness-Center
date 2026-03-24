@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Section } from "@prisma/client";
+import { Section } from "@/lib/db/models";
 import { getCurrentUser } from "@/lib/auth";
 import { hasSectionPermission } from "@/lib/permissions";
 

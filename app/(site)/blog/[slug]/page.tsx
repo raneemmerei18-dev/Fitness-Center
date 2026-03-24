@@ -1,14 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { BlogPost } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function BlogDetailsPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  await connectDB();
   const { slug } = await params;
-  const post = await prisma.blogPost.findUnique({ where: { slug } });
+  const post = (await BlogPost.findOne({ slug }).lean().exec()) as {
+    title: string;
+    excerpt: string;
+    content: string;
+    createdAt: Date | string;
+  } | null;
 
   if (!post) {
     notFound();

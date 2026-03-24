@@ -1,8 +1,14 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { Project } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
-  const projects = await prisma.project.findMany({ orderBy: { createdAt: "desc" } });
+  await connectDB();
+  const projects = await Project.find()
+    .sort({ createdAt: -1 })
+    .lean();
 
   return (
     <main>

@@ -1,11 +1,16 @@
-import { Section } from "@prisma/client";
+import { Section, Project } from "@/lib/db/models";
 import { SectionCard } from "@/components/section-card";
 import { requireSection } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+
+export const dynamic = "force-dynamic";
 
 export default async function ProjectsDashboardPage() {
+  await connectDB();
   await requireSection(Section.PROJECTS);
-  const projects = await prisma.project.findMany({ orderBy: { createdAt: "desc" } });
+  const projects = await Project.find()
+    .sort({ createdAt: -1 })
+    .lean();
 
   return (
     <SectionCard title="Projects" subtitle="Manage project content shown on the website">

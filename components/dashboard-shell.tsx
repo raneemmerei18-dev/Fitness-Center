@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Section } from "@prisma/client";
+import { Section } from "@/lib/db/models";
 import { SessionUser } from "@/lib/auth";
 import { hasSectionPermission } from "@/lib/permissions";
 

@@ -1,18 +1,22 @@
 import Link from "next/link";
 import { getSiteContentMap } from "@/lib/data";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { Service, Project } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  await connectDB();
   const content = await getSiteContentMap();
   const hero = content.home_hero;
-  const services = await prisma.service.findMany({
-    orderBy: { displayOrder: "asc" },
-    take: 3,
-  });
-  const projects = await prisma.project.findMany({
-    take: 3,
-    orderBy: { createdAt: "desc" },
-  });
+  const services = await Service.find()
+    .sort({ displayOrder: 1 })
+    .limit(3)
+    .lean();
+  const projects = await Project.find()
+    .sort({ createdAt: -1 })
+    .limit(3)
+    .lean();
 
   return (
     <main className="overflow-x-hidden">

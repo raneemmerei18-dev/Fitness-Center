@@ -1,8 +1,14 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import connectDB from "@/lib/db/connect";
+import { BlogPost } from "@/lib/db/models";
+
+export const dynamic = "force-dynamic";
 
 export default async function BlogPage() {
-  const posts = await prisma.blogPost.findMany({ orderBy: { createdAt: "desc" } });
+  await connectDB();
+  const posts = await BlogPost.find()
+    .sort({ createdAt: -1 })
+    .lean();
 
   return (
     <main>
