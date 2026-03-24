@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Section {
+  HOME
+  ABOUT
+  SERVICES
+  PROJECTS
+  BLOG
+  NEWS
+  CONTACT
+  SUBMISSIONS
+  USERS
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  isSuperAdmin Boolean  @default(false)
+  roleId       Int?
+  role         Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Role {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  description String?
+  users       User[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model RolePermission {
+  id      Int     @id @default(autoincrement())
+  roleId  Int
+  section Section
+  role    Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, section])
+}
+
+model SiteContent {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  title     String?
+  subtitle  String?
+  body      String?
+  imageUrl  String?
+  details   String?
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id           Int      @id @default(autoincrement())
+  title        String
+  summary      String
+  details      String
+  imageUrl     String?
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id          Int             @id @default(autoincrement())
+  title       String
+  slug        String          @unique
+  description String
+  details     String
+  imageUrl    String?
+  location    String?
+  duration    String?
+  gallery     Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  inquiries   ProjectInquiry[]
+}
+
+model ProjectInquiry {
+  id        Int      @id @default(autoincrement())
+  projectId Int
+  name      String
+  email     String
+  phone     String?
+  message   String
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model BlogPost {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  excerpt   String
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NewsPost {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  excerpt   String
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactSubmission {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  createdAt DateTime @default(now())
+}
