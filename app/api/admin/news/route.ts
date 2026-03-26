@@ -35,5 +35,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL("/dashboard/news", request.url));
+  return NextResponse.redirect(new URL("/dashboard/news", request.url), 303);
 }

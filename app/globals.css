@@ -120,3 +120,29 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+.dashboard-panel input,
+.dashboard-panel textarea,
+.dashboard-panel select {
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.dashboard-panel input:focus,
+.dashboard-panel textarea:focus,
+.dashboard-panel select:focus {
+  outline: none;
+  border-color: #fb923c;
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.18);
+}
+
+.dashboard-panel button[type="submit"] {
+  border-radius: 0.75rem;
+  transition: all 0.25s ease;
+}
+
+.dashboard-panel button[type="submit"]:hover {
+  transform: translateY(-1px);
+}

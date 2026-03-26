@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IProjectInquiry extends Document {
   id?: string;
   projectId: mongoose.Types.ObjectId;
+  userId?: mongoose.Types.ObjectId | null;
   name: string;
   email: string;
   phone?: string;
@@ -13,6 +14,7 @@ export interface IProjectInquiry extends Document {
 const ProjectInquirySchema = new Schema<IProjectInquiry>(
   {
     projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     name: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, default: null },
@@ -20,6 +22,9 @@ const ProjectInquirySchema = new Schema<IProjectInquiry>(
   },
   { timestamps: true }
 );
+
+// A logged-in user can keep a single inquiry per program and update it later.
+ProjectInquirySchema.index({ projectId: 1, userId: 1 }, { unique: true, sparse: true });
 
 // Add virtual 'id' field that maps to '_id'
 ProjectInquirySchema.virtual("id").get(function () {

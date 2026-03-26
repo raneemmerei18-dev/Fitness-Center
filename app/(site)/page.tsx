@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   await connectDB();
   const content = await getSiteContentMap();
-  const hero = content.home_hero;
+  const hero = content.home_hero ?? content.hero_title;
   const services = await Service.find()
     .sort({ displayOrder: 1 })
     .limit(3)
@@ -92,12 +92,12 @@ export default async function HomePage() {
             <div className="relative hidden md:block">
               <div className="animate-pulse-slow absolute inset-0 rounded-3xl bg-gradient-to-r from-orange-500 to-red-600 opacity-30 blur-2xl" />
               <div className="hover-lift relative rounded-3xl bg-gradient-to-br from-orange-500 to-red-600 p-1">
-                <div className="flex h-80 items-center justify-center rounded-2xl bg-slate-900 p-12">
-                  <div className="animate-float text-center">
-                    <div className="mb-4 text-6xl font-black text-orange-500">💪</div>
-                    <p className="text-xl font-bold text-white">Elite Fitness</p>
-                    <p className="mt-2 text-sm text-gray-300">Performance Ready</p>
-                  </div>
+                <div className="h-80 overflow-hidden rounded-2xl bg-slate-900">
+                  <img
+                    src={hero?.imageUrl ?? "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=1200&q=80"}
+                    alt={hero?.title ?? "Fitness hero"}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               </div>
             </div>

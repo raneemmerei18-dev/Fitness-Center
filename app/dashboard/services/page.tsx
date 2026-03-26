@@ -8,9 +8,13 @@ export const dynamic = "force-dynamic";
 export default async function ServicesDashboardPage() {
   await connectDB();
   await requireSection(Section.SERVICES);
-  const services = await Service.find()
-    .sort({ displayOrder: 1 })
-    .lean();
+  const services = (await Service.find().sort({ displayOrder: 1 }).lean().exec()) as unknown as Array<{
+    _id: { toString(): string };
+    title: string;
+    summary: string;
+    details: string;
+    displayOrder: number;
+  }>;
 
   return (
     <SectionCard title="Services" subtitle="Create, update, and delete service cards">
@@ -25,8 +29,8 @@ export default async function ServicesDashboardPage() {
 
       <div className="space-y-4">
         {services.map((service) => (
-          <form key={service.id} action="/api/admin/services" method="post" className="grid gap-2 rounded-xl border border-slate-200 p-4">
-            <input type="hidden" name="id" value={service.id} />
+          <form key={service._id.toString()} action="/api/admin/services" method="post" className="grid gap-2 rounded-xl border border-slate-200 p-4">
+            <input type="hidden" name="id" value={service._id.toString()} />
             <input name="title" defaultValue={service.title} className="rounded-md border border-slate-300 px-3 py-2" />
             <input name="summary" defaultValue={service.summary} className="rounded-md border border-slate-300 px-3 py-2" />
             <textarea name="details" defaultValue={service.details} rows={3} className="rounded-md border border-slate-300 px-3 py-2" />

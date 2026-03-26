@@ -24,5 +24,5 @@ export async function POST(request: Request) {
     roleId,
   });
 
-  return NextResponse.redirect(new URL("/dashboard/users", request.url));
+  return NextResponse.redirect(new URL("/dashboard/users", request.url), 303);
 }

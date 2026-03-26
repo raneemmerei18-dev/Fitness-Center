@@ -5,5 +5,5 @@ import { sessionCookieName } from "@/lib/auth";
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   cookieStore.delete(sessionCookieName);
-  return NextResponse.redirect(new URL("/login", request.url));
+  return NextResponse.redirect(new URL("/login", request.url), 303);
 }

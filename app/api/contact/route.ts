@@ -14,5 +14,5 @@ export async function POST(request: Request) {
     message: String(formData.get("message") ?? ""),
   });
 
-  return NextResponse.redirect(new URL("/contact", request.url));
+  return NextResponse.redirect(new URL("/contact", request.url), 303);
 }

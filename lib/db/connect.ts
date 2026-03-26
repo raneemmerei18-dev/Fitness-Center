@@ -6,20 +6,12 @@ const cached: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> 
 };
 
 async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
-  }
+  if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    const opts = {
+    cached.promise = mongoose.connect(process.env.MONGO_URL || "mongodb://localhost:27017/fitness-center", {
       bufferCommands: false,
-    };
-
-    cached.promise = mongoose
-      .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/fitness-center", opts)
-      .then((mongoose) => {
-        return mongoose;
-      });
+    }).then(m => m);
   }
 
   try {

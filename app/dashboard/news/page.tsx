@@ -8,9 +8,13 @@ export const dynamic = "force-dynamic";
 export default async function NewsDashboardPage() {
   await connectDB();
   await requireSection(Section.NEWS);
-  const posts = await NewsPost.find()
-    .sort({ createdAt: -1 })
-    .lean();
+  const posts = (await NewsPost.find().sort({ createdAt: -1 }).lean().exec()) as unknown as Array<{
+    _id: { toString(): string };
+    title: string;
+    slug: string;
+    excerpt: string;
+    content: string;
+  }>;
 
   return (
     <SectionCard title="News Management" subtitle="Create, edit, and delete news posts">
@@ -25,8 +29,8 @@ export default async function NewsDashboardPage() {
 
       <div className="space-y-4">
         {posts.map((post) => (
-          <form key={post.id} action="/api/admin/news" method="post" className="grid gap-2 rounded-xl border border-slate-200 p-4">
-            <input type="hidden" name="id" value={post.id} />
+          <form key={post._id.toString()} action="/api/admin/news" method="post" className="grid gap-2 rounded-xl border border-slate-200 p-4">
+            <input type="hidden" name="id" value={post._id.toString()} />
             <input name="title" defaultValue={post.title} className="rounded-md border border-slate-300 px-3 py-2" />
             <input name="slug" defaultValue={post.slug} className="rounded-md border border-slate-300 px-3 py-2" />
             <input name="excerpt" defaultValue={post.excerpt} className="rounded-md border border-slate-300 px-3 py-2" />

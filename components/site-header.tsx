@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
+import { SiteHeaderClient } from "@/components/site-header-client";
 
 const links = [
   { href: "/", label: "Home" },
@@ -10,32 +12,25 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const user = await getCurrentUser();
+  const dashboardHref = user
+    ? (user.isSuperAdmin || user.sections.length > 0 ? "/dashboard" : "/user-dashboard")
+    : null;
+
   return (
-    <header className="sticky top-0 z-50 border-b border-orange-200/30 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-red-400/20 bg-gradient-to-r from-black via-slate-900 to-black backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="text-2xl font-black bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent group-hover:from-orange-400 group-hover:to-red-500 transition-all">
+          <div className="text-2xl font-black bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent group-hover:from-red-400 group-hover:to-red-600 transition-all">
             💪 FitMotion
           </div>
         </Link>
-        <nav className="hidden gap-8 md:flex">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-semibold text-gray-200 transition-all hover:text-orange-400 hover:gap-1 flex items-center gap-0"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-        <Link
-          href="/login"
-          className="rounded-full bg-orange-600 hover:bg-orange-700 px-6 py-2 text-sm font-bold text-white transition-all hover-lift shadow-lg hover:shadow-orange-500/50"
-        >
-          Admin
-        </Link>
+        <SiteHeaderClient
+          links={links}
+          isAuthenticated={Boolean(user)}
+          dashboardHref={dashboardHref ?? "/user-dashboard"}
+        />
       </div>
     </header>
   );

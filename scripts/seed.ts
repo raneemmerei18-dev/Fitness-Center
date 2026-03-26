@@ -28,6 +28,7 @@ async function main() {
     await BlogPost.deleteMany({});
     await NewsPost.deleteMany({});
     await Project.deleteMany({});
+    await SiteContent.deleteMany({});
 
     // Create roles
     console.log("📋 Creating roles...");
@@ -137,9 +138,11 @@ async function main() {
     // Create site content
     console.log("📄 Creating site content...");
     await SiteContent.create({
-      key: "hero_title",
+      key: "home_hero",
       title: "Transform Your Body, Transform Your Life",
       subtitle: "Join Fit Motion and Achieve Your Fitness Goals",
+      body: "Our expert trainers and proven programs help you reach your fitness goals faster.",
+      imageUrl: "https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=1200&q=80",
     });
 
     await SiteContent.create({

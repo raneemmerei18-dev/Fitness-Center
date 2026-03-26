@@ -69,5 +69,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL("/dashboard/users", request.url));
+  return NextResponse.redirect(new URL("/dashboard/users", request.url), 303);
 }
